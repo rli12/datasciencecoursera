@@ -1,0 +1,70 @@
+Reproducible Research Project 1
+=========================================================================================================
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+First read the file and insert the data into a dataframe called stepdata:
+
+```{r}
+stepdata <- read.csv("activity.csv", sep = ",", header = TRUE)
+```
+
+## What is the mean total number of steps taken per day? 
+
+The mean total number of steps taken per day:
+
+```{r}
+sumsteps <- aggregate(. ~ date, data = stepdata, FUN = sum)
+hist(sumsteps$steps, xlab = "Steps", main = "Histogram of Steps")
+meansteps <- mean(sumsteps$steps)
+mediansteps <- median(sumsteps$steps)
+```
+
+The mean steps per day is `r meansteps` and the median steps is `r mediansteps`.
+
+## What is the average daily activity pattern?
+
+```{r}
+stepinterval <- aggregate(steps ~ interval, stepdata, mean)
+plot(stepinterval$interval, stepinterval$steps, type = "l", xlab = "Interval", ylab = "Steps")
+```
+
+Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+```{r}
+maxinterval <- stepinterval[which.max(stepinterval$steps),1]
+```
+
+The `r maxinterval` interval contains the maximum number of steps.
+
+## Imputing Missing Values
+
+Calculate the number of NA values in the data set:
+```{r}
+numberofNA <- sum(is.na(stepdata))
+```
+There are `r numberofNA` NA values in the data set.
+
+Impute missing data by average steps of each interval:
+```{r}
+imputedata <- transform(stepdata, steps = ifelse(is.na(stepdata$steps), stepinterval$steps[match(stepdata$interval, stepinterval$interval)], stepdata$steps))
+newsumsteps <- aggregate(steps ~ date, imputedata, sum)
+```
+
+New histogram of total number of steps taken each day.
+```{r}
+hist(newsumsteps$steps, main = "Total Steps Each Day", xlab = "Number of Steps", col = "blue")
+```
+
+New mean and new median for imputed data:
+```{r}
+newmean <- mean(newsumsteps$steps)
+newmedian <- median(newsumsteps$steps)
+```
+
+The new mean is `r newmean` and the new median is `r newmedian`.  The old and new values are very close to each other.  So imputing data had a minimal effect on the previous data.
+
+
